@@ -56,7 +56,7 @@ bool MainMenu::mouseInButton(sf::RectangleShape &button) {
     sf::Vector2f buttonPos = button.getPosition();
 
     if(mousePos.x >= buttonPos.x-buttonSize.x/2 && mousePos.x <= buttonPos.x+buttonSize.x/2 &&
-            mousePos.y >= buttonPos.y-buttonSize.y/2 && mousePos.y <= buttonPos.y+buttonSize.y/2)
+        mousePos.y >= buttonPos.y-buttonSize.y/2 && mousePos.y <= buttonPos.y+buttonSize.y/2)
         return true;
     else
         return false;

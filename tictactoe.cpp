@@ -21,9 +21,10 @@ int main() {
 
     MainMenu *menu = new MainMenu(window);
     unsigned gameState = menu->showMenu();
+    if(gameState == 1 || gameState == 2)
+        menu->setGame(true);
 
     while(window.isOpen()) {
-        menu->setGame(true);
         handleEvents(window, menu, gameState);
         window.clear();
         window.display();

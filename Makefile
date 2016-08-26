@@ -1,7 +1,7 @@
 #Define special targets
 .PHONY: clean, mrproper
 
-#Desable implicit rules
+#Disable implicit rules
 .SUFFIXES:
 
 #Variables
