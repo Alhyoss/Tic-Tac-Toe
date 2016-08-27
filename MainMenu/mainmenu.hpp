@@ -23,7 +23,7 @@ class MainMenu {
         void setButtons();
         bool mouseInButton(sf::RectangleShape &button);
         void mouseMoved();
-        void leftMousePressed();
+        void handleEvents();
 
 
     private:

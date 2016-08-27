@@ -80,14 +80,25 @@ void MainMenu::mouseMoved() {
     }
 }
 
-void MainMenu::leftMousePressed() {
-    if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-        if(inButton[1]) //Play two players
-            state = TWOPLAYERS;
-        else if(inButton[2] && inGame)
-            state = RESUME;
-        else if(inButton[3]) //Exit
-            state = EXIT;
+void MainMenu::handleEvents() {
+    sf::Event event;
+    while(window->pollEvent(event)) {
+        if(event.type == sf::Event::Closed)
+            window->close();
+        else if(event.type == sf::Event::KeyPressed) {
+            if(event.key.code == sf::Keyboard::Escape)
+                state = RESUME;
+        }
+        else if(event.type == sf::Event::MouseButtonPressed) {
+            if (event.mouseButton.button == sf::Mouse::Left) {
+                if(inButton[1]) //Play two players
+                    state = TWOPLAYERS;
+                else if(inButton[2] && inGame)
+                    state = RESUME;
+                else if(inButton[3]) //Exit
+                    state = EXIT;
+            }
+        }
     }
 }
 
@@ -97,16 +108,7 @@ unsigned MainMenu::showMenu() {
     state = WAIT;
     while(window->isOpen() && state == WAIT) {
         mouseMoved();
-        leftMousePressed();
-        sf::Event event;
-        while(window->pollEvent(event)) {
-            if(event.type == sf::Event::Closed)
-                window->close();
-            else if(event.type == sf::Event::KeyPressed) {
-                if(event.key.code == sf::Keyboard::Escape)
-                    state = RESUME;
-            }
-        }
+        handleEvents();
 
         window->clear();
         window->draw(title);
