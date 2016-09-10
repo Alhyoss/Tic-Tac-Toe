@@ -82,14 +82,14 @@ class Cross : public Symbol {
         Cross(unsigned x, unsigned y){
             vertices.setPrimitiveType(sf::Quads);
             vertices.resize(8);
-            vertices[0] = sf::Vector2f(x+30, y+20);
-            vertices[1] = sf::Vector2f(x+20, y+30);
-            vertices[2] = sf::Vector2f(x+160, y+170);
-            vertices[3] = sf::Vector2f(x+170, y+160);
-            vertices[4] = sf::Vector2f(x+20, y+160);
-            vertices[5] = sf::Vector2f(x+30, y+170);
-            vertices[6] = sf::Vector2f(x+170, y+30);
-            vertices[7] = sf::Vector2f(x+160, y+20);
+            vertices[0] = sf::Vector2f(x+20, y+10);
+            vertices[1] = sf::Vector2f(x+10, y+20);
+            vertices[2] = sf::Vector2f(x+105, y+115);
+            vertices[3] = sf::Vector2f(x+115, y+105);
+            vertices[4] = sf::Vector2f(x+10, y+105);
+            vertices[5] = sf::Vector2f(x+20, y+115);
+            vertices[6] = sf::Vector2f(x+115, y+20);
+            vertices[7] = sf::Vector2f(x+105, y+10);
             for(unsigned i=0; i < 8; i++)
                 vertices[i].color = sf::Color::Black;
         }
@@ -110,19 +110,19 @@ class Circle : public Symbol {
             vertices.setPrimitiveType(sf::TrianglesFan);
             vertices.resize((N+2)*2);
             //We create the first black circle
-            vertices[0] = sf::Vector2f(x+95, y+95);
+            vertices[0] = sf::Vector2f(x+62.5, y+62.5);
             vertices[0].color = sf::Color::White;
             for(unsigned i=1; i <= N+1; i++) {
-                vertices[i] = sf::Vector2f(x+95+75*cos(2*M_PI*(i-1)/N),
-                                            y+95+75*sin(2*M_PI*(i-1)/N));
+                vertices[i] = sf::Vector2f(x+62.5+52.5*cos(2*M_PI*(i-1)/N),
+                                            y+62.5+52.5*sin(2*M_PI*(i-1)/N));
                 vertices[i].color = sf::Color::Black;
             }
             //We crate the second white circle
-            vertices[N+2] = sf::Vector2f(x+95, y+95);
+            vertices[N+2] = sf::Vector2f(x+62.5, y+62.5);
             vertices[N+2].color = sf::Color::White;
             for(unsigned i=N+3; i < (N+2)*2; i++) {
-                vertices[i] = sf::Vector2f(x+95+65*cos(2*M_PI*(i-1)/N),
-                                            y+95+65*sin(2*M_PI*(i-1)/N));
+                vertices[i] = sf::Vector2f(x+62.5+42.5*cos(2*M_PI*(i-1)/N),
+                                            y+62.5+42.5*sin(2*M_PI*(i-1)/N));
                 vertices[i].color = sf::Color::White;
             }
         }
@@ -144,11 +144,11 @@ void initGame(std::vector<Square*> &board) {
     for(unsigned i=0; i < 3; i++) {
         for(unsigned j=0; j < 3; j++) {
             square = new Square(j, i);
-            square->setSize(sf::Vector2f(190, 190));
+            square->setSize(sf::Vector2f(125, 125));
             square->setFillColor(sf::Color::White);
             square->setOutlineThickness(5);
             square->setOutlineColor(sf::Color::Black);
-            square->setPosition(j*200+105, i*200+55);
+            square->setPosition(j*130+105, i*130+55);
             board.push_back(square);
         }
     }
@@ -163,7 +163,7 @@ bool mouseInSquare(sf::RenderWindow &window, Square *square) {
     sf::Vector2i mouse = sf::Mouse::getPosition(window);
     //We convert the mouse coordinates in the coordinates of all the objects
     sf::Vector2f mousePos = window.mapPixelToCoords(mouse);
-    unsigned squareSize = 190;
+    unsigned squareSize = 125;
     sf::Vector2f squarePosition = square->getPosition();
 
     //We check if the mouse is inside the square
@@ -287,16 +287,16 @@ void drawWinBox(sf::RenderWindow &window, int player, sf::Font &font) {
     if(player == -1)
         player = 2;
     sf::RectangleShape winBox;
-    winBox.setSize(sf::Vector2f(600, 300));
+    winBox.setSize(sf::Vector2f(400, 200));
     winBox.setFillColor(sf::Color::Black);
     winBox.setOutlineThickness(10);
     winBox.setOutlineColor(sf::Color::Yellow);
-    winBox.setPosition(100, 250);
+    winBox.setPosition(100, 200);
     sf::Text winText;
     winText.setString("  Player " + std::to_string(player) + " won!\nCongratulations!");
     winText.setFont(font);
     winText.setOrigin(winText.getLocalBounds().width/2, winText.getLocalBounds().height/2);
-    winText.setPosition(400, 400);
+    winText.setPosition(300, 300);
     winText.setColor(sf::Color::Yellow);
     window.draw(winBox);
     window.draw(winText);
@@ -342,7 +342,7 @@ void handleEvents(sf::RenderWindow &window, MainMenu *menu,
  * draws in the window and displays it.
  */
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 800), "Tic Tac Toe",
+    sf::RenderWindow window(sf::VideoMode(600, 600), "Tic Tac Toe",
                             sf::Style::Titlebar | sf::Style::Close);
     //We launch the menu
     MainMenu *menu = new MainMenu(window);
@@ -370,7 +370,7 @@ int main() {
         players[i]->setString(p);
         players[i]->setFont(font);
         players[i]->setCharacterSize(30);
-        players[i]->setPosition(230*(i+1), 700);
+        players[i]->setPosition(165*(i+1), 500);
     }
 
     bool gameWon = false;
