@@ -283,9 +283,7 @@ bool gameFinished(std::vector<Square*> &board, unsigned i) {
  * This function simply draw a box that displays a congratulation message.
  * It is called if the game is won by a player
  */
-void drawWinBox(sf::RenderWindow &window, int player, sf::Font &font) {
-    if(player == -1)
-        player = 2;
+void drawWinBox(sf::RenderWindow &window, sf::Font &font, std::string message) {
     sf::RectangleShape winBox;
     winBox.setSize(sf::Vector2f(400, 200));
     winBox.setFillColor(sf::Color::Black);
@@ -293,7 +291,7 @@ void drawWinBox(sf::RenderWindow &window, int player, sf::Font &font) {
     winBox.setOutlineColor(sf::Color::Yellow);
     winBox.setPosition(100, 200);
     sf::Text winText;
-    winText.setString("  Player " + std::to_string(player) + " won!\nCongratulations!");
+    winText.setString(message);
     winText.setFont(font);
     winText.setOrigin(winText.getLocalBounds().width/2, winText.getLocalBounds().height/2);
     winText.setPosition(300, 300);
@@ -388,7 +386,7 @@ int main() {
             gameWon = false;
         }
         //The player is in Yellow, the other in grey
-        if(!gameWon) //If the game is won, both texts are grey
+        if(!gameWon && symbols.size() != 9) //If the game is won, both texts are grey
             players[(player+2)%3]->setColor(sf::Color::Yellow);
         players[(player+3)%3%2]->setColor(sf::Color(94,94,94));
         //We draw what need to be drawn
@@ -401,7 +399,14 @@ int main() {
             window.draw(*symbol);
         //We display the congratulation message if the game is won
         if(gameWon) {
-            drawWinBox(window, player*(-1), font);
+            if(player == -1)
+                drawWinBox(window, font, "  Player 1 won!\nCongratulations!");
+            else
+                drawWinBox(window, font, "  Player 2 won!\nCongratulations!");
+            menu->setGame(false);
+        }
+        else if(symbols.size() == 9) {
+            drawWinBox(window, font, "It's a draw...");
             menu->setGame(false);
         }
         window.display();
