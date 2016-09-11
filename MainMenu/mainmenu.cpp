@@ -55,7 +55,7 @@ void MainMenu::setButtons(){
     //For each button
     for(unsigned i=0; i < numberButtons; i++) {
         //If the button is clickable, it is colored in white, otherwise in grey
-        if(i==0 || (!inGame && i == 2))
+        if(!inGame && i == 2)
             color = sf::Color(94,94,94);
         else
             color = sf::Color::White;
@@ -102,14 +102,14 @@ void MainMenu::mousePosition() {
         //We check if the mouse is in the ith button
         inButton[i] = mouseInButton(buttons[i]);
         //If it is, we highlight the button
-        if(i != 0 && !(!inGame && i == 2) && inButton[i]) {
+        if(!(!inGame && i == 2) && inButton[i]) {
             buttons[i].setScale(1.1, 1.1);
             buttons[i].setOutlineColor(sf::Color::Yellow);
             buttonTexts[i].setScale(1.2, 1.2);
             buttonTexts[i].setColor(sf::Color::Yellow);
         }
         //If not, we  set back the button to normal (in case it was highlighted before)
-        else if(i != 0 && !(!inGame && i == 2)) {
+        else if(!(!inGame && i == 2)) {
             buttons[i].setScale(1, 1);
             buttons[i].setOutlineColor(sf::Color::White);
             buttonTexts[i].setColor(sf::Color::White);
@@ -130,16 +130,18 @@ void MainMenu::handleEvents() {
             window->close();
         //If we press escape
         else if(event.type == sf::Event::KeyPressed) {
-            if(event.key.code == sf::Keyboard::Escape)
+            if(event.key.code == sf::Keyboard::Escape && inGame)
                 state = RESUME;
         }
         //If we left click with the mouse
         else if(event.type == sf::Event::MouseButtonPressed) {
             if(event.mouseButton.button == sf::Mouse::Left) {
                 //If we click on a button, we set update the state of the menu
-                if(inButton[1]) //Play two players
+                if(inButton[0])
+                    state = ONEPLAYER;
+                else if(inButton[1]) //Play two players
                     state = TWOPLAYERS;
-                else if(inButton[2] && inGame)
+                else if(inButton[2] && inGame) //When a game is launched
                     state = RESUME;
                 else if(inButton[3]) //Exit
                     state = EXIT;

@@ -1,14 +1,20 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <unistd.h>
 
 #include "MainMenu/mainmenu.hpp"
+#include "ArtificialIntelligence/bot.hpp"
 
 //Some useful macro
 #define ONEPLAYER 1
 #define TWOPLAYERS 2
 #define RESUME 3
 #define EXIT 4
+
+#define EASY 5
+#define MEDIUM 6
+#define HARD 7
 
 /*
  * The square class represents the square of the board. It has coordinates
@@ -345,6 +351,13 @@ int main() {
     //We launch the menu
     MainMenu *menu = new MainMenu(window);
     unsigned gameState = menu->showMenu();
+    //We init the ia if the user selected one player.
+    bool bot = false;
+    Bot *ia = NULL;
+    if(gameState == ONEPLAYER) {
+        ia = new Bot(window);
+        bot = true;
+    }
     //If we chose to play
     if(gameState == ONEPLAYER || gameState == TWOPLAYERS) {
         menu->setGame(true);
@@ -374,9 +387,23 @@ int main() {
     bool gameWon = false;
     //Main loop of the program
     while(window.isOpen()) {
+        //If we're in single player mode, we make the ia play (it is player 2)
+        if(bot && player == -1 && !gameWon && symbols.size() != 9) {
+            std::vector<int> intBoard;
+            for(int i=0; i < 9; i++)
+                intBoard.push_back(board[i]->getPlayer());
+            int i = ia->play(intBoard);
+            givePlayer(board[i], player, symbols);
+            gameWon = gameFinished(board, i);
+        }
+
         handleEvents(window, menu, board, gameState, player, symbols, gameWon);
         //If we restart the game in the menu
         if(gameState == ONEPLAYER || gameState == TWOPLAYERS) {
+            if(gameState == ONEPLAYER)
+                bot = true;
+            else
+                bot = false;
             for(Symbol* symbol : symbols)
                 delete symbol;
             symbols.clear();
@@ -385,6 +412,7 @@ int main() {
             gameState = RESUME;
             gameWon = false;
         }
+
         //The player is in Yellow, the other in grey
         if(!gameWon && symbols.size() != 9) //If the game is won, both texts are grey
             players[(player+2)%3]->setColor(sf::Color::Yellow);
@@ -419,6 +447,8 @@ int main() {
     for(Square* square : board)
         delete square;
     delete menu;
+    if(ia != NULL)
+        delete ia;
 
     return 0;
 }
