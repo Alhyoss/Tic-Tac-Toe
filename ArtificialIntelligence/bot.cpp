@@ -1,5 +1,5 @@
 #include "bot.hpp"
-
+#include <iostream>
 /*
  * When we create the bot, we want the player to chose the level of it.
  * Therefore we call the showBotMenu function wich will ask the player to do so.
@@ -10,6 +10,8 @@ Bot::Bot(sf::RenderWindow &window) {
     for(unsigned i=0; i < 3; i++)
         inButton[i] = false;
     level = 0;
+    turn = 1;
+    srand(time(NULL));
     showBotMenu();
 }
 
@@ -37,13 +39,8 @@ void Bot::setButtons(){
     sf::Color color;
     //For each button
     for(unsigned i=0; i < 3; i++) {
-        //If the button is clickable, it is colored in white, otherwise in grey
-        if(i == 1 || i == 2)
-            color = sf::Color(94,94,94);
-        else
-            color = sf::Color::White;
         //We set the text of the ith button
-        setText(buttonNames[i], buttonTexts[i], color, sf::Vector2f(1, 1),
+        setText(buttonNames[i], buttonTexts[i], sf::Color::White, sf::Vector2f(1, 1),
                 sf::Vector2f(window->getSize().x/2, (3+i)*window->getSize().y/7-10));
         //We set the ith button
         buttons[i].setFillColor(sf::Color::Black);
@@ -85,14 +82,14 @@ void Bot::mousePosition() {
        //We check if the mouse is in the ith button
        inButton[i] = mouseInButton(buttons[i]);
        //If it is, we highlight the button
-       if(i != 1 && i != 2 && inButton[i]) {
+       if(inButton[i]) {
            buttons[i].setScale(1.1, 1.1);
            buttons[i].setOutlineColor(sf::Color::Yellow);
            buttonTexts[i].setScale(1.2, 1.2);
            buttonTexts[i].setColor(sf::Color::Yellow);
        }
        //If not, we  set back the button to normal (in case it was highlighted before)
-       else if(i != 1 && i != 2) {
+       else {
            buttons[i].setScale(1, 1);
            buttons[i].setOutlineColor(sf::Color::White);
            buttonTexts[i].setColor(sf::Color::White);
@@ -115,6 +112,10 @@ void Bot::handleEvents() {
                 //If we click on a button, we update the level of the ia
                 if(inButton[0]) //Easy
                     level = 1;
+                else if(inButton[1]) //Medium
+                    level = 2;
+                else if(inButton[2]) //Hard
+                    level = 3;
             }
         }
     }
@@ -148,7 +149,7 @@ void Bot::showBotMenu() {
  * This function is called in the main function if we are in single player mode.
  * It call the appropriate function to play, depending on the level of the ia.
  */
-int Bot::play(std::vector<int> &board) {
+int Bot::play(int board[3][3]) {
     if(level == 1)
         return playEasy(board);
     else if(level == 2)
@@ -159,32 +160,200 @@ int Bot::play(std::vector<int> &board) {
 
 /*
  * This function is called by the play function if the ia level is easy.
- * It rather simple: the "ia" simply pick a random number between 0 and 9,
+ * It's rather simple: the "ia" simply pick a random number between 0 and 9,
  * check if this case on the board has already been played, and play there if not.
  */
-int Bot::playEasy(std::vector<int> &board) {
-    srand(time(NULL));
+int Bot::playEasy(int board[3][3]) {
     int i;
     do {
         i = rand()%9;
-    } while(board[i] != 0);
+    } while(board[i%3][i/3] != 0);
     return i;
+}
+
+int Bot::searchDouble(int board[3][3], int player) {
+    for(unsigned i=0; i < 3; i++) {
+        for(unsigned j=0; j < 3; j++) {
+            if(board[j][i] == player) {
+                if(j == 0) {
+                    if(board[j+1][i] == player) {
+                        if(board[j+2][i] == 0)
+                            return i*3+j+2;
+                    }
+                    else if(board[j+2][i] == player){
+                        if(board[j+1][i] == 0)
+                            return i*3+j+1;
+                    }
+                }
+                else if(j == 1) {
+                    if(board[j-1][i] == player){
+                        if(board[j+1][i] == 0)
+                            return i*3+j+1;
+                    }
+                    else if(board[j+1][i] == player){
+                        if(board[j-1][i] == 0)
+                            return i*3+j-1;
+                    }
+                }
+                else if(j == 2) {
+                    if(board[j-1][i] == player){
+                        if(board[j-2][i] == 0)
+                            return i*3+j-2;
+                    }
+                    if(board[j-2][i] == player){
+                        if(board[j-1][i] == 0)
+                            return i*3+j-1;
+                    }
+                }
+
+                if(i == 0) {
+                    if(board[j][i+1] == player){
+                        if(board[j][i+2] == 0)
+                            return (i+2)*3+j;
+                    }
+                    else if(board[j][i+2] == player){
+                        if(board[j][i+1] == 0)
+                            return (i+1)*3+j;
+                    }
+                }
+                else if(i == 1) {
+                    if(board[j][i-1] == player){
+                        if(board[j][i+1] == 0)
+                            return (i+1)*3+j;
+                    }
+                    else if(board[j][i+1] == player){
+                        if(board[j][i-1] == 0)
+                            return (i-1)*3+j;
+                    }
+                }
+                else if(i == 2) {
+                    if(board[j][i-1] == player){
+                        if(board[j][i-2] == 0)
+                            return (i-2)*3+j;
+                    }
+                    if(board[j][i-2] == player){
+                        if(board[j][i-1] == 0)
+                            return (i-1)*3+j;
+                    }
+                }
+
+                if(j == 0 && i == 0) {
+                    if(board[1][1] == player) {
+                        if(board[2][2] == 0)
+                            return 8;
+                    }
+                    else if(board[2][2] == player) {
+                        if(board[1][1] == 0)
+                            return 4;
+                    }
+                }
+                else if(j == 1 && i == 1) {
+                    if(board[2][2] == player) {
+                        if(board[0][0] == 0)
+                            return 0;
+                    }
+                    else if(board[0][0] == player) {
+                        if(board[2][2] == 0)
+                            return 8;
+                    }
+                }
+                else if(j == 2 && i == 2) {
+                    if(board[1][1] == player) {
+                        if(board[0][0] == 0)
+                            return 0;
+                    }
+                    else if(board[0][0] == player) {
+                        if(board[1][1] == 0)
+                            return 4;
+                    }
+                }
+                else if(j == 2 && i == 0) {
+                    if(board[1][1] == player) {
+                        if(board[0][2] == 0)
+                            return 6;
+                    }
+                    else if(board[0][2] == player) {
+                        if(board[1][1] == 0)
+                            return 4;
+                    }
+                }
+                else if(j == 0 && i == 2) {
+                    if(board[1][1] == player) {
+                        if(board[2][0] == 0)
+                            return 2;
+                    }
+                    else if(board[0][2] == player) {
+                        if(board[1][1] == 0)
+                            return 4;
+                    }
+                }
+            }
+        }
+    }
+    return -1;
+}
+
+int Bot::block(int board[3][3]) {
+    return searchDouble(board, 1);
+}
+
+int Bot::tryWin(int board[3][3]) {
+    return searchDouble(board, -1);
 }
 
 /*
  * This function is called by the play function if the ia level is medium.
  * It is yet to be implemented.
  */
-int Bot::playMedium(std::vector<int> &board) {
-
+int Bot::playMedium(int board[3][3]) {
+    int i = -1;
+    if(turn == 1 && board[1][1] == 0)
+        i = 4;
+    else if(turn == 1)
+        i = rand()%4*2+1;
+    else
+        i = tryWin(board);
+    if(i == -1)
+        i = block(board);
+    if(i == -1) {
+        do {
+            i = rand()%9;
+        } while(board[i%3][i/3] != 0);
+    }
+    turn++;
+    return i;
 }
 
 /*
  * This function is called by the play function if the ia level is hard.
  * This function is yet to be implemented.
  */
-int Bot::playHard(std::vector<int> &board) {
-
+int Bot::playHard(int board[3][3]) {
+    int i = -1;
+    if(turn == 1 && board[1][1] == 0)
+        i = 4;
+    else if(turn == 1) {
+        i = rand()%4;
+        if(i == 0 || i == 1)
+            i *= 2;
+        else
+            i = i*2 + 2;
+    }
+    else
+        i = tryWin(board);
+    if(i == -1)
+        i = block(board);
+    if(i == -1) {
+        do {
+            i = rand()%4;
+            if(i == 0 || i == 1)
+                i *= 2;
+            else
+                i = i*2 + 2;
+        } while(board[i%3][i/3] != 0);
+    }
+    turn++;
+    return i;
 }
 
 Bot::~Bot() {}

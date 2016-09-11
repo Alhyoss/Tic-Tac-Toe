@@ -15,7 +15,7 @@ class Bot {
     public:
         Bot(sf::RenderWindow &window);
         //This function is call in the main function.
-        int play(std::vector<int> &board);
+        int play(int board[3][3]);
         ~Bot();
 
     private:
@@ -30,13 +30,19 @@ class Bot {
         void showBotMenu();
         //Those three functions are called by the play function above
         //depending of the level of the ia (easy, medium or hard)
-        int playEasy(std::vector<int> &board);
-        int playMedium(std::vector<int> &board);
-        int playHard(std::vector<int> &board);
+        int playEasy(int board[3][3]);
+        int playMedium(int board[3][3]);
+        int playHard(int board[3][3]);
+
+        int searchDouble(int board[3][3], int player);
+        int block(int board[3][3]);
+        int tryWin(int board[3][3]);
 
         sf::RenderWindow *window;
         //Level of the ia (easy, medium or hard)
         int level;
+        //The turn of the game
+        int turn;
         //Once again, those member variables are copied and pasted from the
         //MainMenu class
         sf::Font font;

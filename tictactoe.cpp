@@ -312,7 +312,7 @@ void drawWinBox(sf::RenderWindow &window, sf::Font &font, std::string message) {
  */
 void handleEvents(sf::RenderWindow &window, MainMenu *menu,
                 std::vector<Square*> &board, unsigned &state, int &player,
-                std::vector<Symbol*> &symbols, bool &gameWon) {
+                std::vector<Symbol*> &symbols, bool &gameWon, bool bot) {
     sf::Event event;
     while(window.pollEvent(event)) {
         //If we press escape
@@ -324,7 +324,7 @@ void handleEvents(sf::RenderWindow &window, MainMenu *menu,
         else if(event.type == sf::Event::Closed || state == EXIT)
             window.close();
         //When we click
-        else if(event.type == sf::Event::MouseButtonPressed) {
+        else if(event.type == sf::Event::MouseButtonPressed && ((player != -1 && bot) || !bot)) {
             if(event.mouseButton.button == sf::Mouse::Left) {
                 for(unsigned i=0; i < 9; i++) {
                     //Check if we click in a square
@@ -387,21 +387,16 @@ int main() {
     bool gameWon = false;
     //Main loop of the program
     while(window.isOpen()) {
-        //If we're in single player mode, we make the ia play (it is player 2)
-        if(bot && player == -1 && !gameWon && symbols.size() != 9) {
-            std::vector<int> intBoard;
-            for(int i=0; i < 9; i++)
-                intBoard.push_back(board[i]->getPlayer());
-            int i = ia->play(intBoard);
-            givePlayer(board[i], player, symbols);
-            gameWon = gameFinished(board, i);
-        }
 
-        handleEvents(window, menu, board, gameState, player, symbols, gameWon);
+        handleEvents(window, menu, board, gameState, player, symbols, gameWon, bot);
         //If we restart the game in the menu
         if(gameState == ONEPLAYER || gameState == TWOPLAYERS) {
-            if(gameState == ONEPLAYER)
+            if(gameState == ONEPLAYER) {
+                if(ia != NULL)
+                    delete ia;
+                ia = new Bot(window);
                 bot = true;
+            }
             else
                 bot = false;
             for(Symbol* symbol : symbols)
@@ -411,6 +406,18 @@ int main() {
             player = 1;
             gameState = RESUME;
             gameWon = false;
+        }
+
+        //If we're in single player mode, we make the ia play (it is player 2)
+        if(bot && player == -1 && !gameWon && symbols.size() != 9) {
+            int intBoard[3][3];
+            for(int i=0; i < 3; i++) {
+                for(int j=0; j < 3; j++)
+                    intBoard[j][i] = board[i*3+j]->getPlayer();
+            }
+            int i = ia->play(intBoard);
+            givePlayer(board[i], player, symbols);
+            gameWon = gameFinished(board, i);
         }
 
         //The player is in Yellow, the other in grey
